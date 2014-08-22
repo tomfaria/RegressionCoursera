@@ -1,0 +1,220 @@
+---
+title: "regressionProject20Aug_knitr"
+author: "htf"
+date: "Wednesday, August 20, 2014"
+output: html_document
+---
+#Effect of Transmission Type on Fuel Efficiency for “mtcars” Data Set
+
+Executive Summary:
+
+In terms of standardized fuel efficiency, the difference between an automatic transmission and a manual transmission is negligible.  For this analysis, the “mtcars” data set was “subsetted” by weight in order  that the analysis address only comparable vehicles.  The vehicle weight range in the analysis is 2465# to 3570#.  The average Miles Per Gallon (MPG) and standard deviation for the comparable automatic transmission vehicles are 18.98MPG and 3.27MPG respectively.  The average MPG and standard deviation for the comparable manual transmission vehicles are 18.99MPG and 2.85MPG respectively.  
+
+Analysis:
+
+Eleven parameters are addressed in the “mtcars” data set (see appendix figure “mtcars Parameters” for full list).  MPG was linearly regressed against the other 10 parameters; lm(mpg ~ . -1, data=mtcars).  The primary parameters influencing MPG are weight (slope = -3.83) and transmission type (slope =  2.83).  The next most influential parameter is rear axle ratio (slope = 1.24, less than half of transmission).  Also, in reviewing the plots of the parameter pairs (see appendix figure “Pairs Plots for mtcars Data Set”) “weight” and the effect of “weight” on the other parameters is the primary driver of standardized fuel efficiency the effect/influence of weight is apparent.  Based on the above, weight is used as the influencing parameter in this analysis of the impact of transmission type on MPG.
+
+A box-and-whisker plot of fuel efficiency versus transmission type shows a very large difference in MPG (see appendix figure “Fuel Efficiency for All 32 Cars in mtcars Data Set”).  The average fuel efficiencies are 17.15MPG for the automatic transmission vehicles and 24.39MPG for the manual transmission vehicles.  Noting that all of the “very low” MPG vehicles are also the “high weight” vehicles it is obvious that weight is the driving parameter ( weight is also the major driver in required horsepower/displacement, rear end ratio, gearing, etc ).  To get an analysis set of vehicles that are comparable for fuel efficiency purposes a subset of “mtcars” is used.  The subset is composed of manual and automatic transmission vehicles in the region in which the vehicle weights overlap; i.e., from the minimum weight automatic transmission vehicle ( 2465#) to the maximum weight manual transmission vehicle ( 3570#).  The subset contains 6 manual transmission vehicles and 11 automatic transmission vehicles.  The vehicles and parameters in the analysis subset are;
+
+Manual transmission subset;
+```{r, echo=FALSE}
+auto<-mtcars[mtcars$am==0,]
+man<-mtcars[mtcars$am==1, ]; manwt<-man[man$wt>=min(auto$wt), ];  manwt 
+```
+
+Automatic transmission subset:
+```{r, echo=FALSE}
+auto<-mtcars[mtcars$am==0,]; autowt<-auto[auto$wt<=max(man$wt), ]; autowt
+```
+For this subset, average Miles Per Gallon (MPG) and standard deviation for the automatic transmission vehicles are 18.98MPG and 3.27MPG respectively.  The average MPG and standard deviation for the  subset manual transmission vehicles are 18.99MPG and 2.85MPG respectively.  
+
+A “t test” for the null hypothesis that the average MPG's are equal has a P-value of over 0.99.
+
+A linear regression fit (lm) was run for each transmission type.  Plots of the residuals are presented in appendix figures “Residuals for Automatic Transmission Subset Model” and “Residuals for Manual Transmission Subset Model.”  There are no obvious patterns in the residuals plots.  In the “automatic residuals plot” the Toyota Corona (vehicle 9) appears to be an outlier.  In the “manual residuals plot” the Ford Pantera L (vehicle 3) and the  Maserati Bora (vehicle 5) may be outliers.  Influence measures “tools,” “hatvalues” (relative leverage) and “dfbetas” (coefficient sensitivity) were run to identify anomalies.  The “hatvalues” results showed that the Toyota Corona and the Maserati Bora are high leverage data points as expected.  The leverage of the Ford Pantera L was not out of line with respect to the other vehicles.  The “dfbetas” indicate potential problems with the Toyota Corona and the Maserati Bora.  The “dfbetas” results for the  Ford Pantera L were higher than the other four data points, but less than half of the Maserati Bora.
+
+Discussion and conclusions:
+
+The analysis is summarized in appendix figure “Affect of Transmission Type on MPG: mtcars Data Set.”  The plot presents fuel efficiency as a function of vehicle weight.  All 32 “mtcars” data points are plotted.  Data for the automatic transmission vehicles is in blue.  Data for the manual transmission vehicles is in red.  The vertical lines are the weight subset limits used for the analysis; all analyses address only the points within the subset limits.  The right “red” line is at the maximum weight of the manual transmission vehicles.  The left “blue” line is at the minimum weight of the automatic transmission vehicles.  The solid slanted lines are the linear regression fits (manual transmission fit: 41.073-7.452*wt and automatic transmission fit: 40.711-6.577*wt).  The dashed lines are at the 95% confidence limits.  The 3 points that were flagged by the “hatvalues” and “dfbetas” (Toyota Corona, Ford Pantera L, and Maserati Bora) are labeled.
+
+The confidence intervals do not overlap to the extent expected based on the P-value.  The Toyota Corona is significantly separated from the other “automatic transmission” vehicles and does appear to be an outlier.  Eliminating the Corona would actually reduce the average fuel efficiency of the “automatic transmission” and would be counterproductive for the comparison.  The Corona was not eliminated.  The Maserati Bora essentially falls on the regression fit and therefore its influence is minimal.  The Ford Pantera L is just inside the confidence limit.  Neither the Maserati nor the Ford were eliminated from the analyses.
+
+In terms of standardized fuel efficiency, the difference between an automatic transmission and a manual transmission is negligible.  Contrary to popular belief, if there is a bias for better fuel efficiency it will favor the automatic transmission, but it will difficult to prove the bias based on only the “mtcars” data set.
+
+Appendix:
+
+
+
+
+
+```{r echo=FALSE}
+# Regression project regressionProject20Aug_knitr
+#  ?mtcars
+#
+#  Which param have greatest effect on mpg? 
+#  In terms of change in mpg, weight(slope=-3.82613) and 
+#  transmission type(slope=2.83222) have greatest effect.
+#  Next closest param drat (rear axle ratio) has less than 1/2 the effect of transmission
+a<-lm(mpg ~ . -1, data=mtcars)
+#  a
+#  Call:
+#  lm(formula = mpg ~ . - 1, data = mtcars)
+#
+#  Coefficients:
+#  cyl      disp        hp      drat        wt      qsec        vs        am      gear  
+# 0.35083   0.01354  -0.02055   1.24158  -3.82613   1.19140   0.18972   2.83222   1.05426  
+# carb  
+# -0.26321 
+#
+#  list parameters
+plot(x=0:1,y=0:1,type='n',lab=c(1,1,5),main='mtcars Parameters',xlab='',ylab='')
+text(.5,.5,'mpg - Miles/(US) gallon
+ cyl - Number of cylinders
+        disp - Displacement (cu.in.)
+        hp - Gross horsepower
+        drat - Rear axle ratio
+        wt - Weight (lb/1000)
+        qsec - 1/4 mile time
+        vs - V/S - straight or V block
+        am - Transmission (0 = automatic, 1 = manual)
+        gear - Number of forward gears
+        carb - Number of carburetors')
+
+#
+#  Review pairs plot.
+pairs(mtcars, main='Pairs Plots for mtcars Data Set')
+# 
+boxplot(mtcars$mpg ~ mtcars$am,main='Fuel Efficiency for All 32 Cars in mtcars Data Set',
+        xlab='Transmission type',names=c('automatic','manual'),ylab='Miles per gallon')
+text(1,33,'( comparison not valid due', col='red')
+text(1,30,'to confounding parameters', col='red')
+text(1,27,'related primarily to weight )', col='red')
+#  separating transmission data sets
+auto<-mtcars[mtcars$am==0,]
+man<-mtcars[mtcars$am==1, ]
+#
+#  full set means and std dev
+#  mean(auto$mpg)  #  [1] 17.14737  avg automatic
+#  sd(auto$mpg)  #  [1] 3.833966  sd automatic
+#  mean(man$mpg)  #  [1] 24.39231  avg manual
+#  sd(man$mpg)  #  [1] 6.166504  sd manual
+#
+#  equalizing/segregating confounder of weight
+autowt<-auto[auto$wt<=max(man$wt), ]
+manwt<-man[man$wt>=min(auto$wt), ]
+#
+#  subset means and srd dev
+#  mean(autowt$mpg)  #  [1] 18.99091
+#  sd(autowt$mpg)  #  [1] 3.267554
+#  mean(manwt$mpg)  #  [1] 18.98333
+#  sd(manwt$mpg)  #  [1] 2.84564
+wman<-manwt$wt
+wauto<-autowt$wt
+lmman<-lm(manwt$mpg ~ wman)
+lmauto<-lm(autowt$mpg ~ wauto)
+n<-seq(min(auto$wt),max(man$wt),by=0.05)
+predman<-predict(lmman, list(wman=n),interval='confidence')
+predauto<-predict(lmauto, list(wauto=n),interval='confidence')
+#
+plot(wauto,resid(lmauto),main='Residuals for Automatic Transmission Subset Model',
+     xlab='Vehicle weight (#/1000)',ylab='mpg residuals')
+text(2.65, -2.5, "Toyota Corona outlier", cex = .8)
+abline(h=0)
+plot(wman,resid(lmman),main='Residuals for Manual Transmission Subset Model',
+     xlab='Vehicle weight (#/1000)',ylab='mpg residuals')
+text(3.45,0.6, "Maserati Bora", cex = .8)
+text(3.15,-1.5, "Ford Pantera L", cex = .8)
+abline(h=0)
+#
+d<-t.test(manwt$mpg,autowt$mpg)
+#  d
+#  Welch Two Sample t-test
+#  
+#  data:  manwt$mpg and autowt$mpg
+#  t = -0.005, df = 11.742, p-value = 0.9961
+#  alternative hypothesis: true difference in means is not equal to 0
+#  95 percent confidence interval:
+#    -3.334537  3.319385
+#  sample estimates:
+#  mean of x mean of y 
+#  18.98333  18.99091 
+#
+#  outlier leverage analysis
+#  hatvalues(lmauto)
+#  1          2          3          4          5          6          7          8 
+#  0.09881893 0.11060838 0.11674503 0.16534729 0.10399968 0.11498900 0.11060838 0.11060838 
+#  9         10         11 
+#  0.81893109 0.14013982 0.10920403 
+#  veh 9 is the automatic Toyota Corona - high leverage as expected from residual plot
+#  dfbetas(lmauto)
+#       (Intercept)        wauto
+#  1    0.084903255 -0.065383588
+#  2   -0.027448690  0.034127092
+#  3   -0.007744153  0.009345889
+#  4    0.328312889 -0.365852008
+#  5    0.325281835 -0.264204237
+#  6    0.217180234 -0.185719227
+#  7   -0.050145016  0.062345547
+#  8    0.012690945 -0.015778715
+#  9  -10.434111320 10.154413505
+#  10   0.169436432 -0.193697967
+#  11   0.134013514 -0.168129257
+#  again veh 9 is the automatic Toyota Corolla - high leverage as expected from residual plot
+#  autowtwo<-autowt[-9,]  #  remove Toyota Corona from set
+#  mean(autowtwo$mpg)
+#  [1] 18.74  avg mpg of set decreased since it had above avg mpg (21.5)
+#
+#  hatvalues(lmman)
+#  1         2         3         4         5         6 
+#  0.3616726 0.1797559 0.2364163 0.2287335 0.7709166 0.2225050
+#  veh 5 is Maserati Bora  w/15.0 mpg - falls almost exactly on regression fit, leverage???
+#  dfbetas(lmman)
+#     (Intercept)       wman
+#  1  -0.2863260  0.2619737
+#  2   0.2111412 -0.1535427
+#  3   0.4586184 -0.5530135
+#  4  -0.1939900  0.1659195
+#  5  -1.2469346  1.3290206
+#  6   0.2800380 -0.2375865
+#  again veh 5 is Maserati Bora  w/15.0 mpg - falls almost exactly on regression fit
+#  veh 3 is Ford Pantera L  w/15.8 mpg - falls on edge of conf interval, leverage???
+#
+plot(auto$wt,auto$mpg,col='blue',pch=0,xlab='Weight(#/1000)',ylab='Miles per gallon',
+     main='Affect of Transmission Type on MPG: mtcars Data Set',xlim=c(2,6),ylim=c(5,30))
+points(man$wt,man$mpg,col='red',pch=17)
+legend(4.5,30,c('automatic(blue)','manual(red)','fit-solid line','95% CI-dashed'),
+       col=c('blue','red','black','black'),pch=c(0,17,20,20),
+       text.col=c('blue','red','black','black'))
+text(2.35,12,'subset min weight',col='blue',srt=90)
+text(3.63,24,'subset max weight',col='red',srt=90)
+#  max(man$wt)  #  [1] 3.57
+#  min(auto$wt)  #  [1] 2.465
+abline(v=max(man$wt),col='red')
+abline(v=min(auto$wt),col='blue')
+#  equalizing/segregating confounder of weight
+autowt<-auto[auto$wt<=max(man$wt), ]
+manwt<-man[man$wt>=min(auto$wt), ]
+#
+#  subset means and std dev
+#  mean(autowt$mpg)  #  [1] 18.99091
+#  sd(autowt$mpg)  #  [1] 3.267554
+#  mean(manwt$mpg)  #  [1] 18.98333
+#  sd(manwt$mpg)  #  [1] 2.84564
+wman<-manwt$wt
+wauto<-autowt$wt
+lmman<-lm(manwt$mpg ~ wman)
+lmauto<-lm(autowt$mpg ~ wauto)
+n<-seq(min(auto$wt),max(man$wt),by=0.05)
+predman<-predict(lmman, list(wman=n),interval='confidence')
+predauto<-predict(lmauto, list(wauto=n),interval='confidence')
+abline(lm(manwt$mpg ~ manwt$wt),col='red',lwd=2)
+abline(lm(autowt$mpg ~ autowt$wt),col='blue',lwd=2)
+lines(n, predman[ ,3], lty = 'dashed', col = 'red',lwd=2)
+lines(n, predman[ ,2], lty = 'dashed', col = 'red',lwd=2)
+lines(n, predauto[ ,3], lty = 'dashed', col = 'blue',lwd=2)
+lines(n, predauto[ ,2], lty = 'dashed', col = 'blue',lwd=2)
+text(4.0,15,'Maserati Bora',col='red',cex=0.6)
+text(2.25,22,'Toyota',col='blue',cex=0.6)
+text(2.25,21.2,'Corona',col='blue',cex=0.6)
+text(2.8,15.8,'Ford Pantera L',col='red', cex=0.6,)
+
+```
